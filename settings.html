@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Settings</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100vw; height: 100vh;
+      background: transparent;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+      user-select: none;
+    }
+    #card {
+      width: 100%; height: 100%;
+      background: rgba(10, 15, 20, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 255, 200, 0.2), inset 0 0 15px rgba(0, 255, 200, 0.05);
+      display: flex; flex-direction: column;
+      border: 1px solid rgba(0, 255, 200, 0.3);
+    }
+    #header {
+      padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
+      -webkit-app-region: drag;
+      border-bottom: 1px solid rgba(0, 255, 200, 0.2);
+      background: linear-gradient(90deg, rgba(0,255,200,0.1) 0%, transparent 100%);
+    }
+    #title { font-size: 14px; font-weight: bold; color: #00FFD1; text-transform: uppercase; text-shadow: 0 0 8px rgba(0, 255, 200, 0.5); }
+    #close {
+      -webkit-app-region: no-drag;
+      width: 24px; height: 24px; border-radius: 4px; background: rgba(255, 50, 50, 0.1);
+      border: 1px solid rgba(255, 50, 50, 0.3); color: #ff4444; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    #close:hover { background: rgba(255, 50, 50, 0.3); box-shadow: 0 0 10px rgba(255, 50, 50, 0.4); color: white; }
+    #body { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; user-select: text; }
+    .section { display: flex; flex-direction: column; gap: 10px; }
+    .section-title { font-size: 13px; color: rgba(0, 255, 200, 0.8); text-transform: uppercase; border-bottom: 1px solid rgba(0,255,200,0.2); padding-bottom: 4px; }
+    .row { display: flex; flex-direction: column; gap: 5px; }
+    .row-flex { display: flex; gap: 10px; }
+    .row-flex > div { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+    label { font-size: 12px; color: #aaa; }
+    input {
+      padding: 8px 10px; border: 1px solid rgba(0, 255, 200, 0.3); border-radius: 4px;
+      background: rgba(0, 0, 0, 0.4); color: #00FFD1; font-size: 13px; outline: none; transition: all 0.2s;
+    }
+    input:focus { border-color: #00FFD1; box-shadow: 0 0 10px rgba(0, 255, 200, 0.2); }
+    #footer { padding: 12px 20px; display: flex; justify-content: flex-end; border-top: 1px solid rgba(0, 255, 200, 0.2); background: rgba(0,0,0,0.2); }
+    button.save {
+      padding: 8px 20px; background: rgba(0, 255, 200, 0.15); color: #00FFD1;
+      border: 1px solid rgba(0, 255, 200, 0.5); border-radius: 4px; cursor: pointer;
+      font-weight: bold; text-transform: uppercase; transition: all 0.2s;
+    }
+    button.save:hover { background: rgba(0, 255, 200, 0.3); box-shadow: 0 0 15px rgba(0, 255, 200, 0.4); }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: rgba(0, 255, 200, 0.2); border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div id="card">
+    <div id="header">
+      <span id="title">Settings HUD</span>
+      <button id="close" title="关闭">×</button>
+    </div>
+    <div id="body">
+      <div class="section">
+        <div class="section-title">Hermes Agent API</div>
+        <div class="row">
+          <label>API URL</label>
+          <input type="text" id="api_url">
+        </div>
+        <div class="row">
+          <label>API Key</label>
+          <input type="text" id="api_key">
+        </div>
+        <div class="row">
+          <label>Model</label>
+          <input type="text" id="model">
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Radial Menu Links (Top, Right, Bottom, Left)</div>
+        <div id="links-container"></div>
+      </div>
+    </div>
+    <div id="footer">
+      <button class="save" id="save-btn">保存并重启</button>
+    </div>
+  </div>
+  <script src="settings-renderer.js"></script>
+</body>
+</html>
