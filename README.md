@@ -4,6 +4,24 @@ Electron 桌面宠物与 AI 聊天伴侣
 
 ![Panda](icon.png)
 
+## 预览
+
+### 主窗口 - 桌面宠物
+
+![主窗口](docs/image/image.png)
+
+### 聊天窗口 - 与 AI 对话
+
+![聊天窗口](docs/image/image-chat.png)
+
+### 环形菜单 - 右键弹出
+
+![环形菜单](docs/image/image-right-button.png)
+
+### 设置面板 - 配置 API 与链接
+
+![设置面板](docs/image/image-setting.png)
+
 ## 功能特性
 
 - **透明桌宠**：无边框、可拖拽、始终置顶，融入桌面环境
