@@ -3,3 +3,5 @@ dist/
 .DS_Store
 config.json
 __pycache__/
+test.js
+icon.png
