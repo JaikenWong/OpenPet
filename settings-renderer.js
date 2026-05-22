@@ -55,7 +55,7 @@ function renderAppearanceSelectors() {
     const op = document.createElement('option');
     op.value = skin.id;
     op.textContent = skin.name;
-    if ((currentConfig.skin_id || 'default') === skin.id) op.selected = true;
+    if ((currentConfig.skin_id || 'p0018') === skin.id) op.selected = true;
     skinSelect.appendChild(op);
   });
 

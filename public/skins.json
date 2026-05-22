@@ -1,10 +1,32 @@
 {
   "skins": [
     {
-      "id": "default",
-      "name": "Default Panda",
-      "sprite_sheet": "public/spritesheet.png",
-      "sprites": "public/sprites.json"
+      "id": "p0018",
+      "name": "Panda 0018",
+      "frame_prefix": "p0018",
+      "sprite_sheet": "public/skins/p0018/spritesheet.png",
+      "sprites": "public/skins/p0018/sprites.json"
+    },
+    {
+      "id": "p0017",
+      "name": "Panda 0017",
+      "frame_prefix": "p0017",
+      "sprite_sheet": "public/skins/p0017/spritesheet.png",
+      "sprites": "public/skins/p0017/sprites.json"
+    },
+    {
+      "id": "p0019",
+      "name": "Panda 0019",
+      "frame_prefix": "p0019",
+      "sprite_sheet": "public/skins/p0019/spritesheet.png",
+      "sprites": "public/skins/p0019/sprites.json"
+    },
+    {
+      "id": "p0020",
+      "name": "Panda 0020",
+      "frame_prefix": "p0020",
+      "sprite_sheet": "public/skins/p0020/spritesheet.png",
+      "sprites": "public/skins/p0020/sprites.json"
     }
   ],
   "outfits": [

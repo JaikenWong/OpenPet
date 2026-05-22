@@ -23,8 +23,7 @@ const STATE = {
 };
 
 const PET_WINDOW_SIZE = 240;
-const SPRITE_OFFSET_X = 611;
-const SPRITE_OFFSET_Y = 470;
+const PET_BOTTOM_MARGIN = 8;
 
 class RadialMenu {
   constructor(fsm) {
@@ -110,6 +109,9 @@ class PetFSM {
     this.outfitSheet = null;
     this.outfitSprites = null;
     this.currentOutfit = null;
+    this.framePrefix = 'p0018';
+    this.baseOffsetX = 0;
+    this.baseOffsetY = 0;
     
     this.state = null;
     this.curAnim = null;
@@ -140,9 +142,11 @@ class PetFSM {
   }
 
   async loadAppearanceAssets(skin, outfit) {
+    this.framePrefix = skin.frame_prefix || 'p0018';
     const baseRes = await fetch(skin.sprites);
     this.baseSprites = await baseRes.json();
     this.baseSheet = await this.loadImage(skin.sprite_sheet);
+    this.computeBaseOffsets();
     this.currentOutfit = outfit;
     if (outfit && outfit.id !== 'none' && outfit.enabled && outfit.sprites && outfit.sprite_sheet) {
       try {
@@ -160,6 +164,19 @@ class PetFSM {
     }
   }
 
+  computeBaseOffsets() {
+    const idle = this.getFrameData(this.baseSprites, 'idle', 0);
+    if (!idle || !idle.w || !idle.h) {
+      this.baseOffsetX = 0;
+      this.baseOffsetY = 0;
+      return;
+    }
+    const targetX = Math.round((PET_WINDOW_SIZE - idle.w) / 2);
+    const targetY = PET_WINDOW_SIZE - idle.h - PET_BOTTOM_MARGIN;
+    this.baseOffsetX = idle.ox - targetX;
+    this.baseOffsetY = idle.oy - targetY;
+  }
+
   loadImage(src) {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -171,8 +188,8 @@ class PetFSM {
 
   getFrameData(sprites, name, index) {
     if (!sprites) return null;
-    const key = `p0018-${name}_${String(index).padStart(2, '0')}.png`;
-    const fallbackKey = `p0018-${name}_${index}.png`;
+    const key = `${this.framePrefix}-${name}_${String(index).padStart(2, '0')}.png`;
+    const fallbackKey = `${this.framePrefix}-${name}_${index}.png`;
     return sprites[key] || sprites[fallbackKey] || null;
   }
 
@@ -198,8 +215,8 @@ class PetFSM {
         this.ctx.drawImage(
           this.baseSheet,
           baseData.x, baseData.y, baseData.w, baseData.h,
-          baseData.ox - SPRITE_OFFSET_X,
-          baseData.oy - SPRITE_OFFSET_Y,
+          baseData.ox - this.baseOffsetX,
+          baseData.oy - this.baseOffsetY,
           baseData.w,
           baseData.h
         );
@@ -211,8 +228,8 @@ class PetFSM {
           this.ctx.drawImage(
             this.outfitSheet,
             outfitData.x, outfitData.y, outfitData.w, outfitData.h,
-            outfitData.ox - SPRITE_OFFSET_X,
-            outfitData.oy - SPRITE_OFFSET_Y,
+            outfitData.ox - this.baseOffsetX,
+            outfitData.oy - this.baseOffsetY,
             outfitData.w,
             outfitData.h
           );

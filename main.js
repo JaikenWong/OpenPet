@@ -9,7 +9,7 @@ const defaultConfig = {
   api_url: 'http://127.0.0.1:8642/v1/chat/completions',
   api_key: 'jiccencewong@dari',
   model: 'hermes-agent',
-  skin_id: 'default',
+  skin_id: 'p0018',
   outfit_id: 'none',
   links: [
     { label: 'B站', url: 'https://bilibili.com', action: 'skill01' },
@@ -31,7 +31,13 @@ function getSkinManifest() {
   const manifestPath = path.join(__dirname, 'public', 'skins.json');
   const fallback = {
     skins: [
-      { id: 'default', name: 'Default', sprite_sheet: 'public/spritesheet.png', sprites: 'public/sprites.json' }
+      {
+        id: 'p0018',
+        name: 'Panda 0018',
+        frame_prefix: 'p0018',
+        sprite_sheet: 'public/skins/p0018/spritesheet.png',
+        sprites: 'public/skins/p0018/sprites.json'
+      }
     ],
     outfits: [
       { id: 'none', name: 'None', enabled: true, supported_anims: [] }
@@ -254,8 +260,10 @@ ipcMain.handle('get-skin-manifest', () => getSkinManifest());
 
 ipcMain.handle('save-config', (e, newConfig) => {
   fs.writeFileSync(path.join(__dirname, 'config.json'), JSON.stringify(newConfig, null, 2));
-  app.relaunch();
-  app.exit(0);
+  config = { ...defaultConfig, ...newConfig };
+  app.relaunch({ args: process.argv.slice(1) });
+  app.quit();
+  return true;
 });
 
 ipcMain.handle('open-external-url', (e, url) => {
