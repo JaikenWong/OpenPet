@@ -1,14 +1,19 @@
 let currentConfig = null;
+let skinManifest = null;
 
 document.getElementById('close').addEventListener('click', () => {
   window.settingsAPI.close();
 });
 
 async function loadConfig() {
-  currentConfig = await window.settingsAPI.getConfig();
+  [currentConfig, skinManifest] = await Promise.all([
+    window.settingsAPI.getConfig(),
+    window.settingsAPI.getSkinManifest()
+  ]);
   document.getElementById('api_url').value = currentConfig.api_url || '';
   document.getElementById('api_key').value = currentConfig.api_key || '';
   document.getElementById('model').value = currentConfig.model || '';
+  renderAppearanceSelectors();
 
   const container = document.getElementById('links-container');
   container.innerHTML = '';
@@ -40,12 +45,37 @@ async function loadConfig() {
   });
 }
 
+function renderAppearanceSelectors() {
+  const skinSelect = document.getElementById('skin_id');
+  const outfitSelect = document.getElementById('outfit_id');
+  skinSelect.innerHTML = '';
+  outfitSelect.innerHTML = '';
+
+  (skinManifest?.skins || []).forEach((skin) => {
+    const op = document.createElement('option');
+    op.value = skin.id;
+    op.textContent = skin.name;
+    if ((currentConfig.skin_id || 'default') === skin.id) op.selected = true;
+    skinSelect.appendChild(op);
+  });
+
+  (skinManifest?.outfits || []).forEach((outfit) => {
+    const op = document.createElement('option');
+    op.value = outfit.id;
+    op.textContent = outfit.name;
+    if ((currentConfig.outfit_id || 'none') === outfit.id) op.selected = true;
+    outfitSelect.appendChild(op);
+  });
+}
+
 document.getElementById('save-btn').addEventListener('click', async () => {
   const newConfig = {
     ...currentConfig,
     api_url: document.getElementById('api_url').value,
     api_key: document.getElementById('api_key').value,
     model: document.getElementById('model').value,
+    skin_id: document.getElementById('skin_id').value,
+    outfit_id: document.getElementById('outfit_id').value,
     links: currentConfig.links.map((link, i) => ({
       ...link,
       label: document.getElementById(`link-label-${i}`).value,

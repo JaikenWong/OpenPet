@@ -1,0 +1,18 @@
+{
+  "skins": [
+    {
+      "id": "default",
+      "name": "Default Panda",
+      "sprite_sheet": "public/spritesheet.png",
+      "sprites": "public/sprites.json"
+    }
+  ],
+  "outfits": [
+    {
+      "id": "none",
+      "name": "No Outfit",
+      "enabled": true,
+      "supported_anims": []
+    }
+  ]
+}

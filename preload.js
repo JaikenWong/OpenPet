@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('openpet', {
   getPetWindowBounds: () => ipcRenderer.invoke('get-pet-window-bounds'),
   getScreenBounds: () => ipcRenderer.invoke('get-screen-bounds'),
   getConfig: () => ipcRenderer.invoke('get-config'),
+  getSkinManifest: () => ipcRenderer.invoke('get-skin-manifest'),
   openExternalUrl: (url) => ipcRenderer.invoke('open-external-url', url),
   openSettingsWindow: () => ipcRenderer.invoke('open-settings-window')
 });

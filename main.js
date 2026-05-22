@@ -9,6 +9,8 @@ const defaultConfig = {
   api_url: 'http://127.0.0.1:8642/v1/chat/completions',
   api_key: 'jiccencewong@dari',
   model: 'hermes-agent',
+  skin_id: 'default',
+  outfit_id: 'none',
   links: [
     { label: 'B站', url: 'https://bilibili.com', action: 'skill01' },
     { label: 'GitHub', url: 'https://github.com', action: 'block' },
@@ -22,6 +24,28 @@ if (fs.existsSync(path.join(__dirname, 'config.json'))) {
   config = { ...config, ...require('./config.json') };
   if (!config.links || config.links.length !== 4) {
     config.links = defaultConfig.links;
+  }
+}
+
+function getSkinManifest() {
+  const manifestPath = path.join(__dirname, 'public', 'skins.json');
+  const fallback = {
+    skins: [
+      { id: 'default', name: 'Default', sprite_sheet: 'public/spritesheet.png', sprites: 'public/sprites.json' }
+    ],
+    outfits: [
+      { id: 'none', name: 'None', enabled: true, supported_anims: [] }
+    ]
+  };
+  try {
+    if (!fs.existsSync(manifestPath)) return fallback;
+    const parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    if (!Array.isArray(parsed.skins) || parsed.skins.length === 0) return fallback;
+    if (!Array.isArray(parsed.outfits) || parsed.outfits.length === 0) parsed.outfits = fallback.outfits;
+    return parsed;
+  } catch (e) {
+    console.error('skins.json parse error:', e.message);
+    return fallback;
   }
 }
 
@@ -226,6 +250,7 @@ ipcMain.handle('close-chat-window', () => {
 });
 
 ipcMain.handle('get-config', () => config);
+ipcMain.handle('get-skin-manifest', () => getSkinManifest());
 
 ipcMain.handle('save-config', (e, newConfig) => {
   fs.writeFileSync(path.join(__dirname, 'config.json'), JSON.stringify(newConfig, null, 2));

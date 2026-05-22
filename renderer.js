@@ -105,8 +105,11 @@ class PetFSM {
     this.canvas.width = PET_WINDOW_SIZE;
     this.canvas.height = PET_WINDOW_SIZE;
     this.ctx = this.canvas.getContext('2d');
-    this.sheet = new Image();
-    this.sprites = null;
+    this.baseSheet = null;
+    this.baseSprites = null;
+    this.outfitSheet = null;
+    this.outfitSprites = null;
+    this.currentOutfit = null;
     
     this.state = null;
     this.curAnim = null;
@@ -123,14 +126,54 @@ class PetFSM {
   }
 
   async init() {
-    const res = await fetch('public/sprites.json');
-    this.sprites = await res.json();
-    
-    this.sheet.src = 'public/spritesheet.png';
-    this.sheet.onload = () => {
-      this.bindEvents();
-      this.transitionTo(STATE.BORN);
-    };
+    const [cfg, manifest] = await Promise.all([
+      window.openpet.getConfig(),
+      window.openpet.getSkinManifest()
+    ]);
+    const skinId = cfg.skin_id || 'default';
+    const outfitId = cfg.outfit_id || 'none';
+    const skin = manifest.skins.find(s => s.id === skinId) || manifest.skins[0];
+    const outfit = manifest.outfits.find(o => o.id === outfitId) || manifest.outfits[0];
+    await this.loadAppearanceAssets(skin, outfit);
+    this.bindEvents();
+    this.transitionTo(STATE.BORN);
+  }
+
+  async loadAppearanceAssets(skin, outfit) {
+    const baseRes = await fetch(skin.sprites);
+    this.baseSprites = await baseRes.json();
+    this.baseSheet = await this.loadImage(skin.sprite_sheet);
+    this.currentOutfit = outfit;
+    if (outfit && outfit.id !== 'none' && outfit.enabled && outfit.sprites && outfit.sprite_sheet) {
+      try {
+        const outfitRes = await fetch(outfit.sprites);
+        this.outfitSprites = await outfitRes.json();
+        this.outfitSheet = await this.loadImage(outfit.sprite_sheet);
+      } catch (e) {
+        console.error('Outfit load failed:', e.message);
+        this.outfitSprites = null;
+        this.outfitSheet = null;
+      }
+    } else {
+      this.outfitSprites = null;
+      this.outfitSheet = null;
+    }
+  }
+
+  loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error(`load image failed: ${src}`));
+      img.src = src;
+    });
+  }
+
+  getFrameData(sprites, name, index) {
+    if (!sprites) return null;
+    const key = `p0018-${name}_${String(index).padStart(2, '0')}.png`;
+    const fallbackKey = `p0018-${name}_${index}.png`;
+    return sprites[key] || sprites[fallbackKey] || null;
   }
 
   playAnim(name, onEnd) {
@@ -142,26 +185,38 @@ class PetFSM {
     let i = 0;
     
     const drawFrame = () => {
-      const frameKey = `p0018-${name}_${String(i).padStart(2, '0')}.png`;
-      const fallbackKey = `p0018-${name}_${i}.png`;
-      const data = this.sprites[frameKey] || this.sprites[fallbackKey];
+      const baseData = this.getFrameData(this.baseSprites, name, i);
       
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       
-      if (data && data.w > 0) {
+      if (baseData && baseData.w > 0 && this.baseSheet) {
         this.ctx.save();
         if (this.isFacingLeft) {
           this.ctx.translate(this.canvas.width, 0);
           this.ctx.scale(-1, 1);
         }
         this.ctx.drawImage(
-          this.sheet,
-          data.x, data.y, data.w, data.h,
-          data.ox - SPRITE_OFFSET_X,
-          data.oy - SPRITE_OFFSET_Y,
-          data.w,
-          data.h
+          this.baseSheet,
+          baseData.x, baseData.y, baseData.w, baseData.h,
+          baseData.ox - SPRITE_OFFSET_X,
+          baseData.oy - SPRITE_OFFSET_Y,
+          baseData.w,
+          baseData.h
         );
+        const supportsOutfit = this.currentOutfit
+          && Array.isArray(this.currentOutfit.supported_anims)
+          && this.currentOutfit.supported_anims.includes(name);
+        const outfitData = supportsOutfit ? this.getFrameData(this.outfitSprites, name, i) : null;
+        if (this.outfitSheet && outfitData && outfitData.w > 0) {
+          this.ctx.drawImage(
+            this.outfitSheet,
+            outfitData.x, outfitData.y, outfitData.w, outfitData.h,
+            outfitData.ox - SPRITE_OFFSET_X,
+            outfitData.oy - SPRITE_OFFSET_Y,
+            outfitData.w,
+            outfitData.h
+          );
+        }
         this.ctx.restore();
       }
       
