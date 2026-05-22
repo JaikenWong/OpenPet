@@ -61,39 +61,50 @@
     }
     .radial-btn {
       position: absolute;
-      top: -20px;
-      left: -20px;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: rgba(15, 20, 25, 0.8);
-      border: 1px solid rgba(0, 255, 200, 0.4);
-      box-shadow: 0 0 10px rgba(0, 255, 200, 0.2), inset 0 0 8px rgba(0, 255, 200, 0.1);
+      top: -26px;
+      left: -26px;
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: rgba(15, 20, 25, 0.88);
+      border: 1px solid rgba(0, 255, 200, 0.5);
+      box-shadow: 0 0 12px rgba(0, 255, 200, 0.25), inset 0 0 10px rgba(0, 255, 200, 0.12);
+      backdrop-filter: blur(4px);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      text-align: center;
+      line-height: 1.1;
+      padding: 4px;
+      font-size: 11px;
       font-weight: 600;
       color: #00FFD1;
       text-shadow: 0 0 5px rgba(0, 255, 200, 0.5);
       cursor: pointer;
-      transition: transform 0.2s, background 0.2s, color 0.2s, box-shadow 0.2s;
+      transition: transform 0.16s ease, background 0.2s, color 0.2s, box-shadow 0.2s, border-color 0.2s;
       opacity: 0;
       transform: translate(0, 0) scale(0);
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
     }
     #radial-menu.active .radial-btn {
       opacity: 1;
       transform: translate(var(--tx), var(--ty)) scale(1);
     }
     .radial-btn:hover {
-      background: rgba(0, 255, 200, 0.2);
-      box-shadow: 0 0 15px rgba(0, 255, 200, 0.6), inset 0 0 12px rgba(0, 255, 200, 0.4);
+      background: rgba(0, 255, 200, 0.24);
+      border-color: rgba(0, 255, 200, 0.75);
+      box-shadow: 0 0 18px rgba(0, 255, 200, 0.65), inset 0 0 14px rgba(0, 255, 200, 0.42);
       color: #FFF;
+    }
+    .radial-btn:active {
+      transform: translate(var(--tx), var(--ty)) scale(0.92);
     }
   </style>
 </head>
 <body>
-  <canvas id="pet" width="1200" height="1200"></canvas>
+  <canvas id="pet" width="240" height="240"></canvas>
   <div id="radial-menu"></div>
   <script src="renderer.js"></script>
 </body>

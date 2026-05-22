@@ -29,6 +29,33 @@ let mainWindow = null;
 let chatWindow = null;
 let settingsWindow = null;
 let isAlwaysOnTop = true;
+const PET_WINDOW_SIZE = 240;
+const PET_ACTION_WINDOW_SIZE = 400;
+
+function closeChatWindow() {
+  if (chatWindow && !chatWindow.isDestroyed()) {
+    chatWindow.close();
+  }
+  chatWindow = null;
+}
+
+function closeSettingsWindow() {
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    settingsWindow.close();
+  }
+  settingsWindow = null;
+}
+
+function setPetWindowSize(size) {
+  if (!mainWindow || mainWindow.isDestroyed()) return false;
+  const [x, y] = mainWindow.getPosition();
+  const [width, height] = mainWindow.getSize();
+  if (width === size && height === size) return true;
+  const nx = Math.round(x + (width - size) / 2);
+  const ny = Math.round(y + (height - size) / 2);
+  mainWindow.setBounds({ x: nx, y: ny, width: size, height: size });
+  return true;
+}
 
 const HERMES_API_URL = config.api_url;
 const conversationHistory = new Map();
@@ -69,8 +96,8 @@ async function callHermes(message, id) {
 
 function createWindow() {
   const display = screen.getPrimaryDisplay();
-  const width = 200;
-  const height = 200;
+  const width = PET_WINDOW_SIZE;
+  const height = PET_WINDOW_SIZE;
   const x = Math.round((display.workArea.width - width) / 2);
   const y = Math.round((display.workArea.height - height) / 2);
 
@@ -105,8 +132,10 @@ function createWindow() {
 }
 
 function createChatWindow() {
+  closeSettingsWindow();
   const p = mainWindow ? mainWindow.getPosition() : [0, 0];
-  const x = Math.round(p[0] + 100 - 200);
+  const s = mainWindow ? mainWindow.getSize() : [PET_WINDOW_SIZE, PET_WINDOW_SIZE];
+  const x = Math.round(p[0] + s[0] / 2 - 200);
   const y = Math.round(p[1] - 500 - 10);
 
   if (chatWindow && !chatWindow.isDestroyed()) {
@@ -141,6 +170,7 @@ function createChatWindow() {
 }
 
 function createSettingsWindow() {
+  closeChatWindow();
   if (settingsWindow) {
     settingsWindow.focus();
     return;
@@ -191,7 +221,7 @@ ipcMain.handle('toggle-chat-window', () => {
 });
 
 ipcMain.handle('close-chat-window', () => {
-  if (chatWindow) chatWindow.hide();
+  closeChatWindow();
   return true;
 });
 
@@ -211,7 +241,7 @@ ipcMain.handle('open-settings-window', () => {
   createSettingsWindow();
 });
 ipcMain.handle('close-settings-window', () => {
-  if (settingsWindow) settingsWindow.close();
+  closeSettingsWindow();
 });
 
 ipcMain.handle('send-message', async (e, message) => {
@@ -239,6 +269,16 @@ ipcMain.handle('get-window-position', () => {
 
 ipcMain.handle('set-window-position', (e, x, y) => {
   if (mainWindow) mainWindow.setPosition(Math.round(x), Math.round(y));
+});
+
+ipcMain.handle('set-pet-window-size', (e, mode) => {
+  if (mode === 'action') return setPetWindowSize(PET_ACTION_WINDOW_SIZE);
+  return setPetWindowSize(PET_WINDOW_SIZE);
+});
+
+ipcMain.handle('get-pet-window-bounds', () => {
+  if (!mainWindow || mainWindow.isDestroyed()) return null;
+  return mainWindow.getBounds();
 });
 
 app.whenReady().then(() => {

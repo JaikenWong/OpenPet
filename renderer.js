@@ -7,7 +7,8 @@ const ANIM = {
   attack04: { end: 14, loop: false, fps: 15 },
   skill01: { end: 54, loop: false, fps: 20 },
   block: { end: 10, loop: false, fps: 15 },
-  suffer: { end: 17, loop: false, fps: 15 },
+  suffer: { end: 17, loop: false, fps: 12 },
+  frozen: { end: 0, loop: false, fps: 8 },
   born: { end: 17, loop: false, fps: 15 },
   out: { end: 20, loop: false, fps: 15 },
   vertigo: { end: 20, loop: true, fps: 12 }
@@ -20,6 +21,10 @@ const STATE = {
   INTERACT: 'INTERACT',
   DRAGGING: 'DRAGGING'
 };
+
+const PET_WINDOW_SIZE = 240;
+const SPRITE_OFFSET_X = 611;
+const SPRITE_OFFSET_Y = 470;
 
 class RadialMenu {
   constructor(fsm) {
@@ -49,7 +54,7 @@ class RadialMenu {
   build() {
     this.el.innerHTML = '';
     const angleStep = 360 / this.items.length;
-    const radius = 60;
+    const radius = 78;
     
     this.items.forEach((item, i) => {
       const angle = i * angleStep;
@@ -79,7 +84,11 @@ class RadialMenu {
     });
   }
 
-  toggle() {
+  async toggle() {
+    if (!this.isActive) {
+      await window.openpet.closeChatWindow();
+      await window.openpet.closeSettingsWindow();
+    }
     this.isActive = !this.isActive;
     this.el.classList.toggle('active', this.isActive);
   }
@@ -93,6 +102,8 @@ class RadialMenu {
 class PetFSM {
   constructor() {
     this.canvas = document.getElementById('pet');
+    this.canvas.width = PET_WINDOW_SIZE;
+    this.canvas.height = PET_WINDOW_SIZE;
     this.ctx = this.canvas.getContext('2d');
     this.sheet = new Image();
     this.sprites = null;
@@ -132,7 +143,8 @@ class PetFSM {
     
     const drawFrame = () => {
       const frameKey = `p0018-${name}_${String(i).padStart(2, '0')}.png`;
-      const data = this.sprites[frameKey];
+      const fallbackKey = `p0018-${name}_${i}.png`;
+      const data = this.sprites[frameKey] || this.sprites[fallbackKey];
       
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       
@@ -145,7 +157,10 @@ class PetFSM {
         this.ctx.drawImage(
           this.sheet,
           data.x, data.y, data.w, data.h,
-          data.ox, data.oy, data.w, data.h
+          data.ox - SPRITE_OFFSET_X,
+          data.oy - SPRITE_OFFSET_Y,
+          data.w,
+          data.h
         );
         this.ctx.restore();
       }
@@ -170,6 +185,9 @@ class PetFSM {
     if (this.wanderInterval) clearInterval(this.wanderInterval);
     
     this.state = newState;
+    window.openpet.setPetWindowSize('normal');
+    this.canvas.width = PET_WINDOW_SIZE;
+    this.canvas.height = PET_WINDOW_SIZE;
     
     switch(newState) {
       case STATE.BORN:
@@ -203,7 +221,7 @@ class PetFSM {
         break;
         
       case STATE.DRAGGING:
-        this.playAnim('suffer'); 
+        this.playAnim('frozen');
         break;
     }
   }
@@ -216,12 +234,14 @@ class PetFSM {
   async doWander() {
     const bounds = await window.openpet.getScreenBounds();
     const pos = await window.openpet.getWindowPosition();
+    const petBounds = await window.openpet.getPetWindowBounds();
     if (!pos || !bounds) {
       this.transitionTo(STATE.IDLE);
       return;
     }
     
-    const maxW = bounds.width - 200;
+    const petWidth = petBounds ? petBounds.width : PET_WINDOW_SIZE;
+    const maxW = bounds.width - petWidth;
     const offset = (Math.random() - 0.5) * 600;
     const targetX = Math.max(0, Math.min(maxW, pos.x + offset));
     
@@ -279,8 +299,8 @@ class PetFSM {
         const dy = Math.abs(e.screenY - this.dragStartPos.y);
         
         if (dx < 5 && dy < 5) {
-          window.openpet.toggleChatWindow();
           this.transitionTo(STATE.IDLE);
+          window.openpet.toggleChatWindow();
         } else {
           this.transitionTo(STATE.IDLE);
         }
